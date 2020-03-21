@@ -1,0 +1,9 @@
+FROM rust:stretch
+
+COPY . /opt/orderitem
+
+WORKDIR /opt/orderitem
+
+RUN cargo build --release
+
+CMD ["echo", "Complete!"]
