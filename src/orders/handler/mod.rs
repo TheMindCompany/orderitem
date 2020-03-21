@@ -9,15 +9,7 @@ pub use update::OrderUpdate;
 pub use delete::OrderDelete;
 use mysql_async::{Opts, OptsBuilder};
 
-// use std::str::FromStr;
 use std::{env, u16};
-// use serde::Deserializer;
-// use serde::de::Deserialize;
-
-// pub fn str_to_u16<'a, D>(deserializer: D) -> Result<u16, D::Error> where D: Deserializer<'a> {
-//     let s = String::deserialize(deserializer).unwrap();
-//     u16::from_str(&s).map_err(serde::de::Error::custom)
-// }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct OrderConn {}
