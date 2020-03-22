@@ -147,8 +147,8 @@ impl OrderCreate {
             Order { order_id: None, customer_id: Some(1), payment_id: Some(1),
                     shipping_id: Some(1), upload_id: Some(1), sku_id: Some("gmask-wht-01-a".to_string()),
                     quantity: Some(1), discount: Some("".to_string()), ready_to_ship: true,
-                    ready_on: Some("".to_string()), notes: Some("Seeded entry. No real sale.".to_string()),
-                    created_on: Some("Seeded entry. No real sale.".to_string())
+                    ready_on: Some("2020-03-21 23:54:08".to_string()), notes: Some("Seeded entry. No real sale.".to_string()),
+                    created_on: Some("2020-03-21 23:54:08".to_string())
             },
         ];
 
@@ -174,7 +174,7 @@ impl OrderCreate {
                 sku_id VARCHAR(255) NOT NULL,
                 quantity INT,
                 discount VARCHAR(255),
-                ready_to_ship BOOLEAN,
+                ready_to_ship BOOLEAN NOT NULL DEFAULT FALSE,
                 ready_on DATE,
                 notes  VARCHAR(255),
                 created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
