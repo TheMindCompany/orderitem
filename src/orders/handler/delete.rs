@@ -12,11 +12,10 @@ impl OrderDelete {
     pub async fn remove_id(order_id: i32) -> Result<bool, String> {
         let database_url = OrderConn::get_url();
 
-        let pool = mysql_async::Pool::new(database_url.await);
+        let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
 
-        conn.batch_exec(r"DELETE order.item (order_id)
-                        VALUES (:order_id)", params!{"order_id" => order_id}).await.unwrap();
+        conn.drop_query(format!("DELETE FROM orderDB.item WHERE order_id={}", order_id)).await.unwrap();
 
         // The destructor of a connection will return it to the pool,
         // but pool should be disconnected explicitly because it's

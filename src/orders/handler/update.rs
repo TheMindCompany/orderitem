@@ -2,16 +2,6 @@ use crate::orders::model::{Order};
 use mysql_async::prelude::*;
 use super::OrderConn;
 
-use std::{
-    collections::VecDeque,
-    fmt,
-    pin::Pin,
-    str::FromStr,
-    sync::{atomic, Arc, Mutex},
-    task::{Context, Poll, Waker},
-    time::{Duration, Instant},
-};
-
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct OrderUpdate {
 
@@ -25,26 +15,35 @@ impl OrderUpdate {
         if order.order_id.is_none() {
             return Err("No Order ID".to_string())
         }
-        //let database_url = OrderConn::get_url();
-        let mut builder = mysql_async::OptsBuilder::new();
-        builder.ip_or_hostname("127.0.0.1".to_string());
 
-        let pool = mysql_async::Pool::new(builder);
+        let database_url = OrderConn::get_url();
+
+        let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
-        let params = params!{
-            "order_id" => OrderUpdate::unwrap_to_i32(order.order_id),
-            "customer_id" => OrderUpdate::unwrap_to_i32(order.customer_id),
-            "payment_id "=> OrderUpdate::unwrap_to_i32(order.payment_id),
-            "shipping_id" => OrderUpdate::unwrap_to_i32(order.shipping_id),
-            "upload_id" => OrderUpdate::unwrap_to_i32(order.upload_id),
-            "sku_id" => OrderUpdate::unwrap_to_string(order.sku_id.clone()),
-            "quantity" => OrderUpdate::unwrap_to_i32(order.quantity),
-            "discount" => OrderUpdate::unwrap_to_string(order.discount.clone()),
-            "ready_to_ship" => order.ready_to_ship,
-            "ready_on" => OrderUpdate::unwrap_to_string(order.ready_on.clone()),
-            "notes" => OrderUpdate::unwrap_to_string(order.notes.clone()),
-        };
-        let mut update_statement: String = "UPDATE order.item SET customer_id=:customer_id".to_string();
+        let orders = vec![ order.clone() ];
+
+        let params = orders.into_iter().map(|order| {
+            params! {
+                "order_id" => order.order_id,
+                "customer_id" => order.customer_id,
+                "payment_id" => order.payment_id,
+                "shipping_id" => order.customer_id,
+                "upload_id" => order.upload_id,
+                "sku_id" => order.sku_id,
+                "quantity" => order.quantity,
+                "discount" => order.discount,
+                "ready_to_ship" => order.ready_to_ship,
+                "ready_on" => order.ready_on,
+                "notes" => order.notes,
+                "created_on" => order.created_on.clone(),
+            }
+        });
+
+        let mut update_statement: String = "UPDATE orderDB.item SET ".to_string();
+
+        if order.customer_id.is_some() {
+            update_statement.push_str(", customer_id=:customer_id");
+        }
 
         if order.payment_id.is_some() {
             update_statement.push_str(", payment_id=:payment_id");
@@ -92,24 +91,6 @@ impl OrderUpdate {
         pool.disconnect().await.unwrap();
 
         Ok(order)
-    }
-
-    pub fn unwrap_to_string(val: Option<String>) -> String {
-        let mut response = String::new();
-        if let Some(content) = val {
-            response = content;
-        }
-
-        response
-    }
-
-    pub fn unwrap_to_i32(val: Option<i32>) -> i32 {
-        let mut response = 0;
-        if let Some(content) = val {
-            response = content;
-        }
-
-        response
     }
 
 }

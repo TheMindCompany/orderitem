@@ -16,7 +16,7 @@ impl OrderCreate {
 
         let database_url = OrderConn::get_url();
 
-        let pool = mysql_async::Pool::new(database_url.await);
+        let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
 
         let params = params!{
@@ -33,56 +33,7 @@ impl OrderCreate {
             "notes" => order.notes.clone(),
         };
 
-        let mut insert_statement: String = "INSERT INTO order.item (".to_string();
-
-        let mut insert_fields: String = "customer_id".to_string();
-        let mut insert_values: String = ":customer_id".to_string();
-
-        if order.payment_id.is_some() {
-            insert_fields.push_str(", payment_id");
-            insert_values.push_str(", :payment_id");
-        }
-
-        if order.shipping_id.is_some() {
-            insert_fields.push_str(", shipping_id");
-            insert_values.push_str(", :shipping_id");
-        }
-
-        insert_fields.push_str(", upload_id");
-        insert_values.push_str(", :upload_id");
-
-        insert_fields.push_str(", sku_id");
-        insert_values.push_str(", :sku_id");
-
-        if order.quantity.is_some() {
-            insert_fields.push_str(", quantity");
-            insert_values.push_str(", :quantity");
-        }
-
-        if order.discount.is_some() {
-            insert_fields.push_str(", discount");
-            insert_values.push_str(", :discount");
-        }
-
-        if order.ready_to_ship {
-            insert_fields.push_str(", ready_to_ship");
-            insert_values.push_str(", :ready_to_ship");
-        }
-
-        if order.order_id.is_some() {
-            insert_fields.push_str(", order_ids");
-            insert_values.push_str(", :order_id");
-        }
-
-        if order.notes.is_some() {
-            insert_fields.push_str(", notes");
-            insert_values.push_str(", :notes");
-        }
-
-        insert_statement.push_str(&insert_fields);
-        insert_statement.push_str(") VALUES (");
-        insert_statement.push_str(&insert_values);
-        insert_statement.push_str(");");
+        let insert_statement = OrderCreate::insert_statement_from(&order);
 
         let conn = conn.batch_exec(insert_statement, params).await.unwrap();
         order.order_id = Some(conn.last_insert_id().unwrap() as i32);
@@ -99,22 +50,32 @@ impl OrderCreate {
     pub async fn new_item(customer_id: i32, upload_id: i32, sku_id: String) -> Result<Order, String> {
         let database_url = OrderConn::get_url();
 
-        let pool = mysql_async::Pool::new(database_url.await);
+        let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
 
         let mut order = Order::new();
-        order.order_id = Some(conn.last_insert_id().unwrap() as i32);
         order.customer_id = Some(customer_id);
         order.upload_id = Some(upload_id);
         order.sku_id = Some(sku_id);
-        let params = params!{
-            "customer_id" => order.customer_id,
-            "upload_id" => order.upload_id,
-            "sku_id" => order.sku_id.clone(),
-        };
 
-        conn.batch_exec(r"INSERT INTO order.item (customer_id, upload_id, sku_id)
-                        VALUES (:customer_id, :upload_id, :sku_id)", params).await.unwrap();
+        let orders = vec![ order.clone() ];
+        let params = orders.into_iter().map(|order| {
+            params!{
+                "customer_id" => order.customer_id,
+                "upload_id" => order.upload_id,
+                "sku_id" => order.sku_id.clone(),
+            }
+        });
+
+        match conn.batch_exec(r"INSERT INTO orderDB.item (customer_id, upload_id, sku_id)
+                        VALUES (:customer_id, :upload_id, :sku_id)", params).await {
+                            Ok(res) => {
+                                println!("Inserted sample row {:?}.", res.last_insert_id().unwrap());
+                            },
+                            Err(err) => {
+                                eprintln!("Unable to insert row: {:#?}", err);
+                            },
+                        }
 
         // The destructor of a connection will return it to the pool,
         // but pool should be disconnected explicitly because it's
@@ -194,11 +155,11 @@ impl OrderCreate {
         let orders_clone = orders.clone();
         let conn = match conn.drop_query("CREATE DATABASE orderDB").await {
             Ok(dbconn) => {
-                println!("Created DB: {:#?}", dbconn);
+                println!("Created DB.");
                 dbconn
             },
             Err(err) => {
-                println!("Cannot create DB: {:#?}", err);
+                eprintln!("Cannot create DB: {:#?}", err);
                 pool.get_conn().await.unwrap()
             },
         };
@@ -211,7 +172,7 @@ impl OrderCreate {
                 shipping_id INT,
                 upload_id INT NOT NULL,
                 sku_id VARCHAR(255) NOT NULL,
-                quantity INT NOT NULL,
+                quantity INT,
                 discount VARCHAR(255),
                 ready_to_ship BOOLEAN,
                 ready_on DATE,
@@ -220,16 +181,15 @@ impl OrderCreate {
             )"
         ).await {
             Ok(dbconn) => {
-                println!("Created DB table: {:#?}", dbconn);
+                println!("Created DB table.");
                 dbconn
             },
             Err(err) => {
-                println!("Cannot create DB table: {:#?}", err);
+                eprintln!("Cannot create DB table: {:#?}", err);
                 pool.get_conn().await.unwrap()
             },
         };
 
-        // Save payments
         let params = orders_clone.into_iter().map(|order| {
             params! {
                 "customer_id" => order.customer_id,
@@ -244,10 +204,17 @@ impl OrderCreate {
                 "notes" => order.notes.clone(),
             }
         });
-        println!("{:#?}", params);
+
         let insert_statement = OrderCreate::insert_statement_from(&orders[0]);
 
-        conn.batch_exec(insert_statement, params).await.unwrap();
+        match conn.batch_exec(insert_statement, params).await {
+            Ok(res) => {
+                println!("Inserted sample row {:?}.", res.last_insert_id().unwrap());
+            },
+            Err(err) => {
+                eprintln!("Unable to insert row: {:#?}", err);
+            },
+        }
 
         Ok(())
     }

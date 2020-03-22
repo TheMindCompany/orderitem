@@ -15,8 +15,8 @@ use std::{env, u16};
 pub struct OrderConn {}
 
 impl OrderConn {
-    pub async fn get_url() -> Opts {
-        let conn_str = OrderConn::from_env().await;
+    pub fn get_url() -> Opts {
+        let conn_str = OrderConn::from_env();
         let opts = Opts::from(conn_str);
 
         if opts.get_db_name().expect("a database name is required").is_empty() {
@@ -26,13 +26,13 @@ impl OrderConn {
         opts
     }
 
-    pub async fn from_env() -> OptsBuilder {
+    pub fn from_env() -> OptsBuilder {
         let mut builder = mysql_async::OptsBuilder::new();
         let port: u16 = if env::var("ORDERITEM_SQL_PORT").is_ok() { env::var("ORDERITEM_SQL_PORT").unwrap().parse().unwrap() } else { 3306 };
 
         builder.ip_or_hostname(env::var("ORDERITEM_SQL_HOST").unwrap());
         builder.tcp_port(port);
-        builder.db_name(Some("orders".to_string()));
+        builder.db_name(Some("orderDB".to_string()));
         if let Ok(host_username) = env::var("ORDERITEM_SQL_USERNAME") {
             if host_username != "None" {
                 builder.user(Some(host_username));
