@@ -44,7 +44,9 @@ impl OrderConn {
                 };
             }
         }
-
+        // See note on mysql bug that is solved by setting keepalive:
+        // https://github.com/blackbeam/mysql_async/issues/94
+        builder.tcp_keepalive(Some(1 as u32));
         builder
     }
 }
