@@ -5,7 +5,7 @@ use response::{OrderItemResponse};
 use crate::orders::*;
 use crate::command_control;
 use crate::command_control::CmdCtl;
-use actix_web::{HttpRequest, Responder, HttpResponse};
+use actix_web::{HttpRequest, Responder, HttpResponse, web, App, HttpServer};
 use structopt::StructOpt;
 
 
@@ -25,11 +25,16 @@ impl Daemeon {
         json
     }
 
-    pub async fn post_key() -> impl Responder {
+    pub async fn post_key(req: HttpRequest) -> impl Responder {
+        let (sku_id, customer_id, upload_id): (Option<String>, Option<i32>, Option<i32>) = req.match_info().load().unwrap();
         let mut options = CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
 
         options.method = "POST".to_string();
+        options.sku_id = sku_id;
+        options.customer_id = customer_id;
+        options.upload_id = upload_id;
+
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
@@ -42,11 +47,14 @@ impl Daemeon {
         HttpResponse::Ok().json(json)
     }
 
-    pub async fn post_from_key() -> impl Responder {
+    pub async fn post_from_key(req: HttpRequest) -> impl Responder {
+        let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
 
         options.method = "POST".to_string();
+        options.order_id = Some(order_id);
+
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
@@ -60,11 +68,14 @@ impl Daemeon {
     }
 
 
-    pub async fn put_key() -> impl Responder {
+    pub async fn put_key(req: HttpRequest) -> impl Responder {
+        let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
 
         options.method = "PUT".to_string();
+        options.order_id = Some(order_id);
+
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
@@ -77,11 +88,14 @@ impl Daemeon {
         HttpResponse::Ok().json(json)
     }
 
-    pub async fn get_key() -> impl Responder {
+    pub async fn get_key(req: HttpRequest) -> impl Responder {
+        let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
 
         options.method = "GET".to_string();
+        options.order_id = Some(order_id);
+
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
@@ -95,11 +109,14 @@ impl Daemeon {
     }
 
 
-    pub async fn del_key() -> impl Responder {
+    pub async fn del_key(req: HttpRequest) -> impl Responder {
+        let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
 
         options.method = "DELETE".to_string();
+        options.order_id = Some(order_id);
+
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
@@ -126,7 +143,7 @@ impl Daemeon {
             App::new()
                 .wrap(Logger::default())
                 .wrap(Logger::new("%a %P %{User-Agent}i"))
-                .route("/create", web::post().to( Daemeon::post_key ))
+                .route("/create/{sku_id}/{customer_id}/{upload_id}", web::post().to( Daemeon::post_key ))
                 .route("/create/from/{order_id}", web::post().to( Daemeon::post_from_key ))
                 .route("/read/{order_id}", web::get().to( Daemeon::get_key ))
                 .route("/update/{order_id}", web::put().to( Daemeon::put_key ))
