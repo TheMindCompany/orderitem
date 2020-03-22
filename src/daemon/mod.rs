@@ -1,11 +1,13 @@
 mod response;
+use actix_web::error::Error;
 use actix_web::middleware::Logger;
 use env_logger::Env;
-use response::{OrderItemResponse};
+use response::{OrderItemResponse, OrderItemError};
 use crate::orders::*;
 use crate::command_control;
 use crate::command_control::CmdCtl;
 use actix_web::{HttpRequest, Responder, HttpResponse, web, App, HttpServer};
+use actix_web::http::StatusCode;
 use structopt::StructOpt;
 
 
@@ -19,13 +21,7 @@ impl Daemeon {
         json
     }
 
-    pub fn to_json_with_error(error: String) -> OrderItemResponse {
-        let mut json = OrderItemResponse::new();
-        json.set_error(error);
-        json
-    }
-
-    pub async fn post_key(req: HttpRequest) -> impl Responder {
+    pub async fn post_key(req: HttpRequest) -> Result<web::HttpResponse, OrderItemError> {
         let (sku_id, customer_id, upload_id): (Option<String>, Option<i32>, Option<i32>) = req.match_info().load().unwrap();
         let mut options = CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
@@ -38,16 +34,19 @@ impl Daemeon {
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
+                Ok(HttpResponse::build(StatusCode::CREATED).json(json))
             },
             Err(err) => {
-                json = Daemeon::to_json_with_error(err);
+                Err(OrderItemError {
+                    msg: err,
+                    status: 400,
+                })
             },
         }
 
-        HttpResponse::Ok().json(json)
     }
 
-    pub async fn post_from_key(req: HttpRequest) -> impl Responder {
+    pub async fn post_from_key(req: HttpRequest) -> Result<web::HttpResponse, OrderItemError> {
         let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
@@ -58,17 +57,19 @@ impl Daemeon {
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
+                Ok(HttpResponse::build(StatusCode::CREATED).json(json))
             },
             Err(err) => {
-                json = Daemeon::to_json_with_error(err);
+                Err(OrderItemError {
+                    msg: err,
+                    status: 400,
+                })
             },
         }
-
-        HttpResponse::Ok().json(json)
     }
 
 
-    pub async fn put_key(req: HttpRequest) -> impl Responder {
+    pub async fn put_key(info: web::Json<OrderItemResponse>, req: HttpRequest) -> Result<web::HttpResponse, OrderItemError> {
         let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
@@ -79,16 +80,18 @@ impl Daemeon {
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
+                Ok(HttpResponse::build(StatusCode::ACCEPTED).json(json))
             },
             Err(err) => {
-                json = Daemeon::to_json_with_error(err);
+                Err(OrderItemError {
+                    msg: err,
+                    status: 400,
+                })
             },
         }
-
-        HttpResponse::Ok().json(json)
     }
 
-    pub async fn get_key(req: HttpRequest) -> impl Responder {
+    pub async fn get_key(req: HttpRequest) -> Result<web::HttpResponse, OrderItemError> {
         let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
@@ -99,17 +102,19 @@ impl Daemeon {
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
+                Ok(HttpResponse::Ok().json(json))
             },
             Err(err) => {
-                json = Daemeon::to_json_with_error(err);
+                Err(OrderItemError {
+                    msg: err,
+                    status: 204,
+                })
             },
         }
-
-        HttpResponse::Ok().json(json)
     }
 
 
-    pub async fn del_key(req: HttpRequest) -> impl Responder {
+    pub async fn del_key(req: HttpRequest) -> Result<web::HttpResponse, OrderItemError> {
         let order_id: i32 = req.match_info().load().unwrap();
         let mut options = command_control::CmdCtl::from_args();
         let mut json = OrderItemResponse::new();
@@ -120,18 +125,18 @@ impl Daemeon {
         match OrderItemRunner::run(&options).await {
             Ok(result) => {
                 json = Daemeon::to_json(result);
+                Ok(HttpResponse::build(StatusCode::ACCEPTED).json(json))
             },
             Err(err) => {
-                json = Daemeon::to_json_with_error(err);
+                Err(OrderItemError {
+                    msg: err,
+                    status: 400,
+                })
             },
         }
-
-        HttpResponse::Ok().json(json)
     }
 
     pub async fn run_as_daemeon() -> std::io::Result<()> {
-        use actix_web::{web, App, HttpServer};
-
         let options = command_control::CmdCtl::from_args();
         let host = format!("{}:{}", options.host, options.port);
 

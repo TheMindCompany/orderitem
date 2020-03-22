@@ -1,5 +1,3 @@
-use std::iter;
-
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 pub struct Order {
     pub order_id: Option<i32>,
@@ -29,14 +27,5 @@ pub struct Order {
 impl Order {
     pub fn new() -> Order {
         Default::default()
-    }
-
-    pub fn values(&self) -> impl Iterator<Item = Option<i32>> {
-        let order_id = iter::once(self.order_id);
-        let customer_id = iter::once(self.customer_id);
-        let payment_id = iter::once(self.payment_id);
-        let shipping_id = iter::once(self.shipping_id);
-        let upload_id = iter::once(self.upload_id);
-        order_id.chain(customer_id).chain(payment_id).chain(shipping_id).chain(upload_id)
     }
 }

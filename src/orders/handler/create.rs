@@ -52,7 +52,7 @@ impl OrderCreate {
 
         let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
-
+        let mut err_res = String::new();
         let mut order = Order::new();
         order.customer_id = Some(customer_id);
         order.upload_id = Some(upload_id);
@@ -69,20 +69,22 @@ impl OrderCreate {
 
         match conn.batch_exec(r"INSERT INTO orderDB.item (customer_id, upload_id, sku_id)
                         VALUES (:customer_id, :upload_id, :sku_id)", params).await {
-                            Ok(res) => {
-                                println!("Inserted sample row {:?}.", res.last_insert_id().unwrap());
-                            },
-                            Err(err) => {
-                                eprintln!("Unable to insert row: {:#?}", err);
-                            },
-                        }
+            Ok(res) => {
+                let inserted_id = res.last_insert_id().unwrap() as i32;
+                order.order_id = Some(inserted_id);
+            },
+            Err(err) => {
+                err_res = format!("Unable to insert row: {:#?}", err);
+            },
+        }
 
-        // The destructor of a connection will return it to the pool,
-        // but pool should be disconnected explicitly because it's
-        // an asynchronous procedure.
         pool.disconnect().await.unwrap();
 
-        Ok(order)
+        if order.order_id.is_some() {
+            Ok(order)
+        } else {
+            Err(err_res)
+        }
     }
 
     pub fn insert_statement_from(order: &Order) -> String {
@@ -215,7 +217,7 @@ impl OrderCreate {
                 eprintln!("Unable to insert row: {:#?}", err);
             },
         }
-
+        pool.disconnect().await.unwrap();
         Ok(())
     }
 
