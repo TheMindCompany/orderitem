@@ -39,10 +39,10 @@ impl OrderUpdate {
             }
         });
 
-        let mut update_statement: String = "UPDATE orderDB.item SET ".to_string();
+        let mut update_statement: String = "UPDATE orderDB.item SET".to_string();
 
         if order.customer_id.is_some() {
-            update_statement.push_str(", customer_id=:customer_id");
+            update_statement.push_str(" customer_id=:customer_id");
         }
 
         if order.payment_id.is_some() {
