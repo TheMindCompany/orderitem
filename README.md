@@ -178,6 +178,9 @@ Response:
 }
 ```
 
+Failure:  
+**STATUS 400**
+
 ##### POST /create/from/{order-id}
 
 Make a new order from an existing open or closed order.  Precaution, this will close previous order if open.
@@ -196,6 +199,9 @@ Response:
 }
 ```
 
+Failure:  
+**STATUS 400**
+
 ##### GET /read/{order-id}
 
 Get details on an order.
@@ -213,6 +219,9 @@ Response:
   }
 }
 ```
+
+Failure:  
+**STATUS 204**
 
 ##### PUT /update/{order-id}
 
@@ -243,6 +252,9 @@ Response:
 }
 ```
 
+Failure:  
+**STATUS 400**
+
 ##### DELETE /delete/{order-id}
 
 Delete an order.  This changes an order's status to "CANCELED".
@@ -250,6 +262,8 @@ Delete an order.  This changes an order's status to "CANCELED".
 Response:  
 **STATUS 202**
 
+Failure:  
+**STATUS 400**
 
 ---
 
