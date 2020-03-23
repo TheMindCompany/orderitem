@@ -163,7 +163,7 @@ Response:
 
 ##### DELETE /delete/{order-id}
 
-Delete an order.  This changes an order's status to "DELETE".
+Delete an order.  This changes an order's status to "CANCELED".
 
 Response:  
 **STATUS 202**

@@ -15,11 +15,9 @@ impl OrderDelete {
         let pool = mysql_async::Pool::new(database_url);
         let conn = pool.get_conn().await.unwrap();
 
-        conn.drop_query(format!("DELETE FROM orderDB.item WHERE order_id={}", order_id)).await.unwrap();
+        conn.drop_query(format!("UPDATE orderDB.item SET status='CANCELED' WHERE order_id={};", order_id))
+            .await.unwrap();
 
-        // The destructor of a connection will return it to the pool,
-        // but pool should be disconnected explicitly because it's
-        // an asynchronous procedure.
         pool.disconnect().await.unwrap();
 
         Ok(true)
