@@ -1,3 +1,4 @@
+use mysql_async::Value::NULL;
 use crate::orders::model::{Order};
 use mysql_async::prelude::*;
 use super::OrderConn;
@@ -20,18 +21,18 @@ impl OrderCreate {
         let conn = pool.get_conn().await.unwrap();
 
         let params = params!{
-            "order_id" => order.order_id,
-            "status" => order.status.clone(),
+            "order_id" => NULL,
+            "status" => "REORDER",
             "customer_id" => order.customer_id,
-            "payment_id "=> order.payment_id,
-            "shipping_id" => order.shipping_id,
+            "payment_id"=> NULL,
+            "shipping_id" => NULL,
             "upload_id" => order.upload_id,
             "sku_id" => order.sku_id.clone(),
             "quantity" => order.quantity,
-            "discount" => order.discount.clone(),
-            "ready_to_ship" => order.ready_to_ship,
-            "shipped_on" => order.shipped_on.clone(),
-            "notes" => order.notes.clone(),
+            "discount" => NULL,
+            "ready_to_ship" => false,
+            "shipped_on" => NULL,
+            "notes" => NULL,
         };
 
         let insert_statement = OrderCreate::insert_statement_from(&order);
@@ -39,9 +40,6 @@ impl OrderCreate {
         let conn = conn.batch_exec(insert_statement, params).await.unwrap();
         order.order_id = Some(conn.last_insert_id().unwrap() as i32);
 
-        // The destructor of a connection will return it to the pool,
-        // but pool should be disconnected explicitly because it's
-        // an asynchronous procedure.
         pool.disconnect().await.unwrap();
 
         Ok(order)
