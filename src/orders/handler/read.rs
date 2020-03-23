@@ -18,7 +18,7 @@ impl OrderRead {
         let conn = pool.get_conn().await.unwrap();
 
         // Load order from database. Because we need to reuse conn we want async func to return pool before next command.
-        let result = conn.prep_exec(format!("SELECT order_id, status, customer_id, payment_id, shipping_id, upload_id, sku_id, quantity, discount, ready_to_ship, ready_on, notes, created_on FROM orderDB.item WHERE order_id={};", order_id), ()).await.unwrap();
+        let result = conn.prep_exec(format!("SELECT order_id, status, customer_id, payment_id, shipping_id, upload_id, sku_id, quantity, discount, ready_to_ship, shipped_on, notes, created_on FROM orderDB.item WHERE order_id={};", order_id), ()).await.unwrap();
         let (_, order_vec) = result.map_and_drop(|row| {
             let mut return_order = Order::new();
             return_order.order_id = mysql_async::from_value(row.as_ref(0).unwrap().to_owned());
@@ -31,7 +31,7 @@ impl OrderRead {
             return_order.quantity = mysql_async::from_value(row.as_ref(7).unwrap().to_owned());
             return_order.discount = mysql_async::from_value(row.as_ref(8).unwrap().to_owned());
             return_order.ready_to_ship = mysql_async::from_value(row.as_ref(9).unwrap().to_owned());
-            return_order.ready_on = mysql_async::from_value(row.as_ref(10).unwrap().to_owned());
+            return_order.shipped_on = mysql_async::from_value(row.as_ref(10).unwrap().to_owned());
             return_order.notes = mysql_async::from_value(row.as_ref(11).unwrap().to_owned());
             //return_order.created_on = mysql_async::from_value(row.as_ref(11).unwrap().to_owned());
             return_order

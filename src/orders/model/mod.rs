@@ -20,7 +20,7 @@ pub struct Order {
     // Is order printed and ready to be shipped.
     pub ready_to_ship: bool,
     // Any service notes to assit fufilment.
-    pub ready_on: Option<String>,
+    pub shipped_on: Option<String>,
     // Any service notes to assit fufilment.
     pub notes: Option<String>,
     pub created_on: Option<String>,

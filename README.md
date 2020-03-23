@@ -70,12 +70,57 @@ orderitem --seed
 Daemon mode runs OrderITEM as HTTP REST service.  You can either use the options arguments to predefine route values or environment value equivalents. See below examples.
 
 ---
-
-#### Fully Customized Signed Url's Allowed
+#### Run Daemon In Container
 
 ```bash
 orderitem --host 0.0.0.0 --port 8080 --daemon
 ```
+
+
+#### Daemon HTTP Routes
+##### Field Definitions
+
+Field definitions can be found in every response containing order information.  The same fields are used in updating orders.
+
+**order_id** INT  
+The reference ID to an order item and all associated  activity.
+
+**status** String  
+Current status of the order.
+
+**customer_id** INT  
+Customer ID associated to order item.
+
+**payment_id** INT  
+Payment ID associated to the item purchase.
+
+**shipping_id** INT  
+Shipping ID associated to item cargo.
+
+**upload_id** INT  
+Upload ID for printing of sku.
+
+**sku_id** String  
+Stock unit identifier to be used in completing order item.
+
+**quantity**  INT  
+Number of item to be ordered.
+
+**discount** String  
+Discount assignment code.
+
+**ready_to_ship** bool  
+Is the order packed and labeled for shipping pickup marker.
+
+**shipped_on** String  
+Date order item was shipped
+
+**notes** String
+Notes to assist in order handling.
+
+**created_on** String
+When the order item was created.
+
 
 ##### POST /create
 

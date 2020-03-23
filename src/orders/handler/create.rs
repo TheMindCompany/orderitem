@@ -30,7 +30,7 @@ impl OrderCreate {
             "quantity" => order.quantity,
             "discount" => order.discount.clone(),
             "ready_to_ship" => order.ready_to_ship,
-            "ready_on" => order.ready_on.clone(),
+            "shipped_on" => order.shipped_on.clone(),
             "notes" => order.notes.clone(),
         };
 
@@ -154,7 +154,7 @@ impl OrderCreate {
             Order { order_id: None, status: Some("COMPLETED".to_string()), customer_id: Some(1), payment_id: Some(1),
                     shipping_id: Some(1), upload_id: Some(1), sku_id: Some("gmask-wht-01-a".to_string()),
                     quantity: Some(1), discount: Some("".to_string()), ready_to_ship: true,
-                    ready_on: Some("2020-03-21 23:54:08".to_string()), notes: Some("Seeded entry. No real sale.".to_string()),
+                    shipped_on: Some("2020-03-21 23:54:08".to_string()), notes: Some("Seeded entry. No real sale.".to_string()),
                     created_on: Some("2020-03-21 23:54:08".to_string())
             },
         ];
@@ -183,7 +183,7 @@ impl OrderCreate {
                 quantity INT,
                 discount VARCHAR(255),
                 ready_to_ship BOOLEAN NOT NULL DEFAULT FALSE,
-                ready_on DATE,
+                shipped_on DATE,
                 notes  VARCHAR(255),
                 created_on TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )"
@@ -209,7 +209,7 @@ impl OrderCreate {
                 "quantity" => order.quantity,
                 "discount" => order.discount,
                 "ready_to_ship" => order.ready_to_ship,
-                "ready_on" => order.ready_on,
+                "shipped_on" => order.shipped_on,
                 "notes" => order.notes.clone(),
             }
         });

@@ -34,7 +34,7 @@ impl OrderUpdate {
                 "quantity" => order.quantity,
                 "discount" => order.discount,
                 "ready_to_ship" => order.ready_to_ship,
-                "ready_on" => order.ready_on,
+                "shipped_on" => order.shipped_on,
                 "notes" => order.notes,
                 "created_on" => order.created_on.clone(),
             }
@@ -74,8 +74,8 @@ impl OrderUpdate {
             update_statement.push_str(", discount=:discount");
         }
 
-        if order.ready_on.is_some() {
-            update_statement.push_str(", ready_on=:ready_on");
+        if order.shipped_on.is_some() {
+            update_statement.push_str(", shipped_on=:shipped_on");
         }
 
         if order.ready_to_ship {
