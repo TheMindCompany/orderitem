@@ -1,4 +1,3 @@
-use mysql_async::Conn;
 use crate::orders::model::{Order};
 use mysql_async::prelude::*;
 use super::OrderConn;
