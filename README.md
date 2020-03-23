@@ -67,7 +67,7 @@ orderitem --seed
 
 ### Using as Daemon
 
-Daemon mode runs orderitem as HTTP REST service.  You can either use the options arguments to predefine route values or environment value equivalents. See below examples.
+Daemon mode runs OrderITEM as HTTP REST service.  You can either use the options arguments to predefine route values or environment value equivalents. See below examples.
 
 ---
 
@@ -77,22 +77,96 @@ Daemon mode runs orderitem as HTTP REST service.  You can either use the options
 orderitem --host 0.0.0.0 --port 8080 --daemon
 ```
 
-##### GET /create
+##### POST /create
 
-Response:  **STATUS 200 Content-Type: application/json**
+Make a new order with a custom, sku and upload id.
 
+Response:  
+**STATUS 201 Content-Type: application/json**
 ```json
 {
   "data": {
     "attributes": {
       "order_id": "",
-      "user_id": "",
+      "customer_id": "",
+      "upload_id": "",
+      "sku_id": ""
+    }
+  }
+}
+```
+
+##### POST /create/from/{order-id}
+
+Make a new order from an existing open or closed order.  Precaution, this will close previous order if open.
+
+Response:  
+**STATUS 201 Content-Type: application/json**
+```json
+{
+  "data": {
+    "attributes": {
+      "order_id": "",
+      "customer_id": "",
       "upload_id": ""
     }
   }
 }
 ```
 
+##### GET /read/{order-id}
+
+Get details on an order.
+
+Response:  
+**STATUS 200 Content-Type: application/json**
+```json
+{
+  "data": {
+    "attributes": {
+      "order_id": "",
+      "customer_id": "",
+      "upload_id": ""
+    }
+  }
+}
+```
+
+##### PUT /update/{order-id}
+
+Update order fields.
+
+Request:
+```json
+{
+  "data": {
+    "attributes": {
+      "upload_id": ""
+    }
+  }
+}
+```
+
+Response:  
+**STATUS 202 Content-Type: application/json**
+```json
+{
+  "data": {
+    "attributes": {
+      "order_id": "",
+      "customer_id": "",
+      "upload_id": ""
+    }
+  }
+}
+```
+
+##### DELETE /delete/{order-id}
+
+Delete an order.  This changes an order's status to "DELETE".
+
+Response:  
+**STATUS 202**
 
 
 ---

@@ -1,9 +1,8 @@
 use crate::orders::Order;
 use std::fmt::{Display, Formatter, Result as FmtResult};
-use std::io;
 
 use actix_web::http::StatusCode;
-use actix_web::{web, App, HttpServer, ResponseError};
+use actix_web::{web, ResponseError};
 use serde::Serialize;
 use serde_json::{json, to_string_pretty};
 

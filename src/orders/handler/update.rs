@@ -25,6 +25,7 @@ impl OrderUpdate {
         let params = orders.into_iter().map(|order| {
             params! {
                 "order_id" => order.order_id,
+                "status" => order.status,
                 "customer_id" => order.customer_id,
                 "payment_id" => order.payment_id,
                 "shipping_id" => order.customer_id,
@@ -40,6 +41,10 @@ impl OrderUpdate {
         });
 
         let mut update_statement: String = "UPDATE orderDB.item SET".to_string();
+
+        if order.status.is_some() {
+            update_statement.push_str(" status=:status");
+        }
 
         if order.customer_id.is_some() {
             update_statement.push_str(" customer_id=:customer_id");

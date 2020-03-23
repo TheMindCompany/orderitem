@@ -1,6 +1,8 @@
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 pub struct Order {
     pub order_id: Option<i32>,
+    // Status of order.
+    pub status: Option<String>,
      // Must provide.
     pub customer_id: Option<i32>,
     // None until it is payed.

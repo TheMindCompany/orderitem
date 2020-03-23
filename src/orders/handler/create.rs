@@ -21,6 +21,7 @@ impl OrderCreate {
 
         let params = params!{
             "order_id" => order.order_id,
+            "status" => order.status.clone(),
             "customer_id" => order.customer_id,
             "payment_id "=> order.payment_id,
             "shipping_id" => order.shipping_id,
@@ -61,14 +62,15 @@ impl OrderCreate {
         let orders = vec![ order.clone() ];
         let params = orders.into_iter().map(|order| {
             params!{
+                "status" => Some("CART-ITEM"),
                 "customer_id" => order.customer_id,
                 "upload_id" => order.upload_id,
                 "sku_id" => order.sku_id.clone(),
             }
         });
 
-        match conn.batch_exec(r"INSERT INTO orderDB.item (customer_id, upload_id, sku_id)
-                        VALUES (:customer_id, :upload_id, :sku_id)", params).await {
+        match conn.batch_exec(r"INSERT INTO orderDB.item (status, customer_id, upload_id, sku_id)
+                        VALUES (:status, :customer_id, :upload_id, :sku_id)", params).await {
             Ok(res) => {
                 let inserted_id = res.last_insert_id().unwrap() as i32;
                 order.order_id = Some(inserted_id);
@@ -90,8 +92,11 @@ impl OrderCreate {
     pub fn insert_statement_from(order: &Order) -> String {
         let mut insert_statement: String = "INSERT INTO orderDB.item (".to_string();
 
-        let mut insert_fields: String = "customer_id".to_string();
-        let mut insert_values: String = ":customer_id".to_string();
+        let mut insert_fields: String = "status".to_string();
+        let mut insert_values: String = ":status".to_string();
+
+        insert_fields.push_str(", customer_id");
+        insert_values.push_str(", :customer_id");
 
         if order.payment_id.is_some() {
             insert_fields.push_str(", payment_id");
@@ -146,7 +151,7 @@ impl OrderCreate {
         let conn = pool.get_conn().await.unwrap();
 
         let orders = vec![
-            Order { order_id: None, customer_id: Some(1), payment_id: Some(1),
+            Order { order_id: None, status: Some("COMPLETED".to_string()), customer_id: Some(1), payment_id: Some(1),
                     shipping_id: Some(1), upload_id: Some(1), sku_id: Some("gmask-wht-01-a".to_string()),
                     quantity: Some(1), discount: Some("".to_string()), ready_to_ship: true,
                     ready_on: Some("2020-03-21 23:54:08".to_string()), notes: Some("Seeded entry. No real sale.".to_string()),
@@ -169,6 +174,7 @@ impl OrderCreate {
         let conn = match conn.drop_query(
             r"CREATE TABLE orderDB.item (
                 order_id INT AUTO_INCREMENT PRIMARY KEY,
+                status VARCHAR(255) NOT NULL,
                 customer_id INT NOT NULL,
                 payment_id INT,
                 shipping_id INT,
@@ -195,6 +201,7 @@ impl OrderCreate {
         let params = orders_clone.into_iter().map(|order| {
             params! {
                 "customer_id" => order.customer_id,
+                "status" => order.status,
                 "payment_id" => order.payment_id,
                 "shipping_id" => order.customer_id,
                 "upload_id" => order.upload_id,

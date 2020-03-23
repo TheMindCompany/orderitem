@@ -17,6 +17,10 @@ pub struct CmdCtl {
     #[structopt(short = "o", long = "order-id")]
     pub order_id: Option<i32>,
 
+    /// Order status.
+    #[structopt(long = "status")]
+    pub status: Option<String>,
+
     /// Customer ID
     #[structopt(short = "c", long = "customer-id")]
     pub customer_id: Option<i32>,
@@ -142,6 +146,10 @@ impl CmdCtl {
 
         if self.customer_id.is_some() {
             order.customer_id = self.customer_id;
+        }
+
+        if self.status.is_some() {
+            order.status = self.status.clone();
         }
 
         if self.payment_id.is_some() {

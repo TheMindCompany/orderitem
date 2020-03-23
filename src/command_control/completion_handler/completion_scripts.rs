@@ -52,7 +52,7 @@ pub struct CompletionScript { }
 
     case "${cmd}" in
         orderitem)
-            opts=" -r -d -v -h -o -c -u -s -q -n -t  --ready-to-ship --seed --daemon --dry-run --verbose --help --order-id --customer-id --payment-id --shipping-id --upload-id --sku --quantity --discount --remove-discount --notes --timeout --port --host  <method>  configuration help"
+            opts=" -r -d -v -h -o -c -u -s -q -n -t  --ready-to-ship --seed --daemon --dry-run --verbose --help --order-id --status --customer-id --payment-id --shipping-id --upload-id --sku --quantity --discount --remove-discount --notes --timeout --port --host  <method>  configuration help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -64,6 +64,10 @@ pub struct CompletionScript { }
                     return 0
                     ;;
                     -o)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --status)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -323,6 +327,7 @@ complete -F _orderitem -o bashdefault -o default orderitem
         pub fn fish() {
             println!("{}",r#"
     complete -c orderitem -n "__fish_use_subcommand" -s o -l order-id -d 'Order ID'
+complete -c orderitem -n "__fish_use_subcommand" -l status -d 'Order status'
 complete -c orderitem -n "__fish_use_subcommand" -s c -l customer-id -d 'Customer ID'
 complete -c orderitem -n "__fish_use_subcommand" -l payment-id -d 'Payment ID'
 complete -c orderitem -n "__fish_use_subcommand" -l shipping-id -d 'Shipping ID'
@@ -399,6 +404,7 @@ _orderitem() {
     _arguments "${_arguments_options[@]}" \
 '-o+[Order ID]' \
 '--order-id=[Order ID]' \
+'--status=[Order status]' \
 '-c+[Customer ID]' \
 '--customer-id=[Customer ID]' \
 '--payment-id=[Payment ID]' \
@@ -682,6 +688,7 @@ Register-ArgumentCompleter -Native -CommandName 'orderitem' -ScriptBlock {
         'orderitem' {
             [CompletionResult]::new('-o', 'o', [CompletionResultType]::ParameterName, 'Order ID')
             [CompletionResult]::new('--order-id', 'order-id', [CompletionResultType]::ParameterName, 'Order ID')
+            [CompletionResult]::new('--status', 'status', [CompletionResultType]::ParameterName, 'Order status')
             [CompletionResult]::new('-c', 'c', [CompletionResultType]::ParameterName, 'Customer ID')
             [CompletionResult]::new('--customer-id', 'customer-id', [CompletionResultType]::ParameterName, 'Customer ID')
             [CompletionResult]::new('--payment-id', 'payment-id', [CompletionResultType]::ParameterName, 'Payment ID')
@@ -830,6 +837,7 @@ edit:completion:arg-completer[orderitem] = [@words]{
         &'orderitem'= {
             cand -o 'Order ID'
             cand --order-id 'Order ID'
+            cand --status 'Order status'
             cand -c 'Customer ID'
             cand --customer-id 'Customer ID'
             cand --payment-id 'Payment ID'
