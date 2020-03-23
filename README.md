@@ -23,11 +23,28 @@ make install
 
 ### Configuration
 
-In an effort to make configuration of `orderitem` simple we have defined a YAML config to handle credentials if not already configured.  Credentials will first look for service credentials on system and fall back to this `config.yaml` file when not found. This config can managed through `~/.orderitem/config.yaml`.  To change the base path you can set it with an environment field `CONFIG_orderitem_BASE`.
+In an effort to make configuration of `orderitem` simple we have defined a YAML config to handle credentials if not already configured.  Credentials will first look for environment settings on system and fall back to this `config.yaml` file when not found.
 
-The first time you run the cli utility you will be prompted to configure existing credentials are not found.  
+The first time you run the cli utility you will be prompted to configure existing credentials are not found when not setting environment fields.  
 
-**~/.orderitem/config.yaml**  
+#### Environment
+
+This configuration can managed with environment values.
+
+```
+ORDERITEM_HOST=127.0.0.1
+ORDERITEM_PORT=8080
+ORDERITEM_CONFIG_BASE=/home/user/.orderitem
+ORDERITEM_SQL_HOST=127.0.0.1
+ORDERITEM_SQL_PORT=3306
+ORDERITEM_SQL_USERNAME=root
+ORDERITEM_SQL_PASSWORD=pass
+```
+
+#### YAML
+
+This configuration can managed through `~/.orderitem/config.yaml`.  To change the base path you can set it with an environment field `CONFIG_orderitem_BASE`.
+
 ```yaml
 kind: config
 version: alpha/1.0
@@ -38,6 +55,7 @@ specs:
     user: ***
     pass: ***
 ```
+
 
 ### Autocompletion
 
@@ -59,11 +77,30 @@ Refer to the help menu for details `-h` or `--help`.
 
 ### Using the CLI
 
-**Seed new database with table**  
+**Seed new database with table and sample data.**  
 ```bash
 orderitem --seed
 ```
 
+**Creaete a new order item.**  
+```bash
+orderitem create --customer-id 10 --sku-id item-01-a --upload-id 59
+```
+
+**Read a order item.**  
+```bash
+orderitem read --order-id 1
+```
+
+**Update a order item status.**  
+```bash
+orderitem update --order-id 1 --status DONE
+```
+
+**Delete a order item.**  
+```bash
+orderitem delete --order-id 1
+```
 
 ### Using as Daemon
 
@@ -75,7 +112,6 @@ Daemon mode runs OrderITEM as HTTP REST service.  You can either use the options
 ```bash
 orderitem --host 0.0.0.0 --port 8080 --daemon
 ```
-
 
 #### Daemon HTTP Routes
 ##### Field Definitions
@@ -121,6 +157,7 @@ Notes to assist in order handling.
 **created_on** String
 When the order item was created.
 
+---
 
 ##### POST /create
 

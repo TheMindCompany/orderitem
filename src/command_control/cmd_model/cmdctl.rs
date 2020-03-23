@@ -76,11 +76,11 @@ pub struct CmdCtl {
     pub daemon: bool,
 
     /// Daemon mode port.
-    #[structopt(long = "port", env = "OrderItem_PORT", default_value="8080")]
+    #[structopt(long = "port", env = "ORDERITEM_PORT", default_value="8080")]
     pub port: i32,
 
     /// Daemon mode host.
-    #[structopt(long = "host", env = "OrderItem_HOST", default_value="127.0.0.1")]
+    #[structopt(long = "host", env = "ORDERITEM_HOST", default_value="127.0.0.1")]
     pub host: String,
 
     /// Don't run commands only log.
