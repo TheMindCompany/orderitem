@@ -157,6 +157,10 @@ impl Daemeon {
                 .route("/update/{order_id}", web::put().to( Daemeon::put_key ))
                 .route("/delete/{order_id}", web::delete().to( Daemeon::del_key ))
         })
+        .keep_alive(None) // <- Disable keep-alive
+        // https://docs.rs/actix-web/3.0.0-alpha.1/actix_web/struct.HttpServer.html#method.bind_rustls
+        // https://docs.rs/rustls/0.17.0/rustls/struct.ServerConfig.html
+        // .bind_rustls(tls_config)
         .bind(host)?
         .run()
         .await
